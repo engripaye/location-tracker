@@ -18,3 +18,17 @@ router = APIRouter(
     prefix="/track",
     tags=["Tracking"]
 )
+
+@router.post("/{session_id}/location")
+def save_location(session_id: int, request: LocationRequest, db: Session = Depends(get_db)):
+    location = LocationPoint(
+        session_id=session_id,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        accuracy=request.accuracy,
+    )
+
+    db.add(location)
+    db.commit()
+
+    return {"message": "saved"}
