@@ -43,3 +43,6 @@ class LocationPoint(Base):
     latitude = Column(Float)
     longitude = Column(Float)
 
+    accuracy = Column(Float)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
