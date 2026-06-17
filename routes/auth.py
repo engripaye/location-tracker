@@ -49,3 +49,13 @@ def login(
 
     if not user:
         return {"error": "Invalid username or password"}
+
+    if not verify_password(
+            request.password,
+            user.password_hash): return {"error": "Invalid username or password"}
+
+    token = create_access_token(
+        {"sub": str(user.id)}
+    )
+
+    return {"access_token": token}
