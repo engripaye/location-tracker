@@ -42,7 +42,8 @@ def latest_location(
     session: db_query(
         TrackingSession,
     ).filter(
-        TrackingSession.share_token == share_token
+        TrackingSession.share_token
+        == share_token
     ).first()
 
     if not session:
