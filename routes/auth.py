@@ -38,3 +38,14 @@ def register(
     db.commit()
 
     return {"message": "Registered"}
+
+
+@router.post("/login")
+def login(
+        request: LoginRequest,
+        db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.email == request.email).first()
+
+    if not user:
+        return {"error": "Invalid username or password"}
