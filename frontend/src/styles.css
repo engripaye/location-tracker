@@ -80,8 +80,8 @@ p {
 h1 {
   max-width: 860px;
   margin-bottom: 18px;
-  font-size: clamp(2.5rem, 7vw, 5.6rem);
-  line-height: 0.98;
+  font-size: clamp(2.25rem, 5.6vw, 4.85rem);
+  line-height: 1;
   letter-spacing: 0;
 }
 
@@ -415,6 +415,62 @@ input:focus,
 textarea:focus {
   border-color: #187653;
   box-shadow: 0 0 0 4px rgba(24, 118, 83, 0.12);
+}
+
+.password-wrap {
+  position: relative;
+  display: block;
+}
+
+.password-wrap input {
+  padding-right: 52px;
+}
+
+.eye-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  display: grid;
+  width: 36px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  color: #38514b;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  transform: translateY(-50%);
+}
+
+.eye-button:hover {
+  background: #e5f0ea;
+}
+
+.eye-button svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.auth-links {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.link-button {
+  padding: 0;
+  color: #187653;
+  border: 0;
+  background: transparent;
+  font-weight: 900;
+}
+
+.link-button:hover {
+  text-decoration: underline;
 }
 
 .proof-card,

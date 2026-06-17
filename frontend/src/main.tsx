@@ -572,10 +572,10 @@ function MapPreview({ locations }: { locations: LocationResponse[] }) {
 function BrandStatus({ user, isAuthenticated }: { user: UserResponse | null; isAuthenticated: boolean }) {
   return (
     <div className="brand-status">
-      <div className="brand-mark">LT</div>
+      <div className="brand-mark">EI</div>
       <div>
-        <strong>{isAuthenticated ? user?.name ?? "Responder" : "Guest mode"}</strong>
-        <span>{isAuthenticated ? user?.email : "Authentication required"}</span>
+        <strong>{isAuthenticated ? user?.name ?? "Responder" : "ENGR. IPAYE"}</strong>
+        <span>{isAuthenticated ? user?.email : "Emergency tracker"}</span>
       </div>
     </div>
   );
