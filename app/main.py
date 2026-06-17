@@ -13,5 +13,13 @@ from app.routes import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Locaiton Tracker",
+    title="Location Tracker",
 )
+
+app.include_router(auth_routes.router)
+app.include_router(session_routes.router)
+app.include_router(tracking_routes.router)
+
+@app.get("/")
+def health():
+    return {"status": "running"}
