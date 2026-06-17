@@ -1,48 +1,98 @@
-from sqlalchemy import (
-Column,
-Integer,
-String,
-Float,
-DateTime,
-ForeignKey,
-Boolean
-)
+from datetime import datetime, timezone
+from uuid import UUID as PyUUID
+from uuid import uuid4
 
-from sqlalchemy.orm import relationship
-from datetime import datetime
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
-class User(Base):
-    __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    email = Column(String)
-    password_hash = Column(String)
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
+
+    sessions: Mapped[list["TrackingSession"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    refresh_tokens: Mapped[list["RefreshToken"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    sos_events: Mapped[list["SosEvent"]] = relationship(back_populates="user")
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
+    device_fingerprint: Mapped[str | None] = mapped_column(String(128))
+    user_agent: Mapped[str | None] = mapped_column(Text)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
+
+    user: Mapped[User] = relationship(back_populates="refresh_tokens")
+
 
 class TrackingSession(Base):
-    __tablename__ = 'tracking_sessions'
-    id = Column(Integer, primary_key=True)
+    __tablename__ = "tracking_sessions"
 
-    owner_id = Column(Integer, ForeignKey('user.id'))
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    owner_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    share_token_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
 
-    share_token = Column(String, unique=True)
+    owner: Mapped[User] = relationship(back_populates="sessions")
+    locations: Mapped[list["LocationPoint"]] = relationship(back_populates="session", cascade="all, delete-orphan")
+    sos_events: Mapped[list["SosEvent"]] = relationship(back_populates="session")
 
-    active = Column(Boolean, default=True)
-
-    created_at = Column(DateTime, default=datetime.now())
+    __table_args__ = (
+        Index("idx_tracking_sessions_owner_created", "owner_id", "created_at"),
+        Index("idx_tracking_sessions_share_token_hash", "share_token_hash"),
+    )
 
 
 class LocationPoint(Base):
-    __tablename__ = 'location_points'
-    id = Column(Integer, primary_key=True)
+    __tablename__ = "location_points"
 
-    session_id = Column(Integer, ForeignKey('tracking_sessions.id'))
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    session_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tracking_sessions.id", ondelete="CASCADE"), nullable=False)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    accuracy: Mapped[float | None] = mapped_column(Float)
+    address: Mapped[str | None] = mapped_column(Text)
+    device_fingerprint: Mapped[str | None] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
 
-    latitude = Column(Float)
-    longitude = Column(Float)
+    session: Mapped[TrackingSession] = relationship(back_populates="locations")
 
-    accuracy = Column(Float)
+    __table_args__ = (Index("idx_location_points_session_created", "session_id", "created_at"),)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+class SosEvent(Base):
+    __tablename__ = "sos_events"
+
+    id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[PyUUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    session_id: Mapped[PyUUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("tracking_sessions.id", ondelete="SET NULL"))
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
+    message: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="open")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
+
+    user: Mapped[User] = relationship(back_populates="sos_events")
+    session: Mapped[TrackingSession | None] = relationship(back_populates="sos_events")
+
+    __table_args__ = (Index("idx_sos_events_user_created", "user_id", "created_at"),)
