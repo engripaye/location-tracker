@@ -20,4 +20,6 @@ def create_access_token(
 ):
     payload = data.copy()
 
-    payload["exp"] = datetime.utcnow() + timedelta(hours=1)
+    payload["exp"] = (datetime.utcnow() + timedelta(hours=1))
+
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHMS)
