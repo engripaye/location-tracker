@@ -8,7 +8,8 @@ from app.security import create_access_token, decode_access_token, fingerprint_h
 
 
 def test_app_imports_and_registers_expected_routes():
-    paths = {route.path for route in app.routes}
+    paths = set(app.openapi()["paths"])
+    websocket_paths = _registered_paths(include_websockets=True)
 
     assert "/" in paths
     assert "/health" in paths
@@ -17,8 +18,24 @@ def test_app_imports_and_registers_expected_routes():
     assert "/auth/refresh" in paths
     assert "/sessions/start" in paths
     assert "/track/{share_token}/location" in paths
-    assert "/ws/track/{share_token}" in paths
     assert "/sos" in paths
+    assert "/ws/track/{share_token}" in websocket_paths
+
+
+def _registered_paths(include_websockets: bool = False) -> set[str]:
+    paths: set[str] = set()
+    routes = list(app.routes)
+    for route in app.routes:
+        original_router = getattr(route, "original_router", None)
+        if original_router is not None:
+            routes.extend(original_router.routes)
+    for route in routes:
+        path = getattr(route, "path", None)
+        if path is None:
+            continue
+        if include_websockets or "websocket" not in type(route).__name__.lower():
+            paths.add(path)
+    return paths
 
 
 def test_health_endpoint():

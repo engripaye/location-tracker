@@ -1,15 +1,18 @@
 import json
 from typing import Any
 
-import redis
-
 from app.config import get_settings
+
+try:
+    import redis
+except ModuleNotFoundError:
+    redis = None
 
 
 class Cache:
     def __init__(self) -> None:
         redis_url = get_settings().redis_url
-        self.client = redis.from_url(redis_url, decode_responses=True) if redis_url else None
+        self.client = redis.from_url(redis_url, decode_responses=True) if redis is not None and redis_url else None
 
     def get_json(self, key: str) -> Any | None:
         if self.client is None:

@@ -40,6 +40,21 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
+## Run Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The React app runs on http://127.0.0.1:5173 and proxies API calls to the
+FastAPI backend on http://127.0.0.1:8000. To point it at another backend, set:
+
+```bash
+VITE_API_BASE_URL=http://your-api-host
+```
+
 For Supabase, set `DATABASE_URL` to the Supabase PostgreSQL connection string:
 
 ```bash

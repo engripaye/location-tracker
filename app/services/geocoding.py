@@ -1,5 +1,3 @@
-import httpx
-
 from app.config import get_settings
 from app.services.cache import cache
 
@@ -20,6 +18,11 @@ async def reverse_geocode(latitude: float, longitude: float) -> str | None:
 
 
 async def _google_reverse_geocode(latitude: float, longitude: float) -> str | None:
+    try:
+        import httpx
+    except ModuleNotFoundError:
+        return None
+
     settings = get_settings()
     async with httpx.AsyncClient(timeout=8) as client:
         response = await client.get(
@@ -33,6 +36,11 @@ async def _google_reverse_geocode(latitude: float, longitude: float) -> str | No
 
 
 async def _openstreetmap_reverse_geocode(latitude: float, longitude: float) -> str | None:
+    try:
+        import httpx
+    except ModuleNotFoundError:
+        return None
+
     settings = get_settings()
     async with httpx.AsyncClient(timeout=8, headers={"User-Agent": settings.nominatim_user_agent}) as client:
         response = await client.get(
