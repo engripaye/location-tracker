@@ -1,16 +1,27 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.database import init_local_database
 from app.routes import auth_routes, session_routes, tracking_routes
 
 
 settings = get_settings()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_local_database()
+    yield
+
+
 app = FastAPI(
     title="Location Tracker",
     description="Secure, consent-based live location tracking API.",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(

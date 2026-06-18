@@ -1,7 +1,11 @@
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
+from app.database import Base, get_db
 from app.main import app
 from app.schemas import LocationRequest, RegisterRequest
 from app.security import create_access_token, decode_access_token, fingerprint_hash, token_hash
@@ -45,6 +49,42 @@ def test_health_endpoint():
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_register_endpoint_returns_tokens():
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    TestingSessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False, expire_on_commit=False)
+    Base.metadata.create_all(bind=engine)
+
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    client = TestClient(app)
+    email = f"user-{uuid4()}@example.com"
+
+    try:
+        response = client.post(
+            "/auth/register",
+            json={"name": "Test User", "email": email, "password": "strong-password"},
+            headers={"X-Device-Fingerprint": "test-device"},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["access_token"]
+    assert data["refresh_token"]
+    assert data["token_type"] == "bearer"
 
 
 def test_access_token_round_trip():

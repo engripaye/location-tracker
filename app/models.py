@@ -2,8 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, String, Text
-from sqlalchemy.dialects import postgresql
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -16,7 +15,7 @@ def utc_now() -> datetime:
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -31,8 +30,8 @@ class User(Base):
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
-    id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     token_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
     device_fingerprint: Mapped[str | None] = mapped_column(String(128))
     user_agent: Mapped[str | None] = mapped_column(Text)
@@ -46,8 +45,8 @@ class RefreshToken(Base):
 class TrackingSession(Base):
     __tablename__ = "tracking_sessions"
 
-    id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), primary_key=True, default=uuid4)
-    owner_id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     share_token_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -66,8 +65,8 @@ class TrackingSession(Base):
 class LocationPoint(Base):
     __tablename__ = "location_points"
 
-    id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), primary_key=True, default=uuid4)
-    session_id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), ForeignKey("tracking_sessions.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    session_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("tracking_sessions.id", ondelete="CASCADE"), nullable=False)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
     accuracy: Mapped[float | None] = mapped_column(Float)
@@ -83,9 +82,9 @@ class LocationPoint(Base):
 class SosEvent(Base):
     __tablename__ = "sos_events"
 
-    id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id: Mapped[UUID] = mapped_column(postgresql.UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    session_id: Mapped[UUID | None] = mapped_column(postgresql.UUID(as_uuid=True), ForeignKey("tracking_sessions.id", ondelete="SET NULL"))
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    session_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), ForeignKey("tracking_sessions.id", ondelete="SET NULL"))
     latitude: Mapped[float | None] = mapped_column(Float)
     longitude: Mapped[float | None] = mapped_column(Float)
     message: Mapped[str | None] = mapped_column(Text)

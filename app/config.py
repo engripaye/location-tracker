@@ -31,7 +31,7 @@ def get_settings() -> Settings:
     return Settings(
         database_url=os.getenv(
             "DATABASE_URL",
-            "postgresql+psycopg://postgres:postgres@localhost:5432/location_tracker",
+            "sqlite:///./location_tracker.db",
         ),
         redis_url=os.getenv("REDIS_URL"),
         jwt_secret_key=os.getenv("JWT_SECRET_KEY", "change-me-in-production"),

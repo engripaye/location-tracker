@@ -3,5 +3,6 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .env
+location_tracker.db
 frontend/node_modules/
 frontend/dist/
