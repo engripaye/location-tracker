@@ -45,10 +45,9 @@ button {
   padding: 48px;
   color: #f8fbf8;
   background:
-    linear-gradient(120deg, rgba(13, 29, 28, 0.92), rgba(22, 61, 54, 0.78)),
-    url("https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1600&q=80");
-  background-size: cover;
-  background-position: center;
+    repeating-linear-gradient(32deg, transparent 0 68px, rgba(255, 255, 255, 0.035) 69px 71px),
+    repeating-linear-gradient(118deg, transparent 0 92px, rgba(255, 255, 255, 0.04) 93px 95px),
+    #173631;
   border-radius: 0;
   box-shadow: 0 28px 80px rgba(16, 32, 30, 0.22);
 }
@@ -162,12 +161,11 @@ h2 {
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px),
     linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
-    linear-gradient(135deg, rgba(124, 183, 156, 0.45), rgba(36, 95, 90, 0.5)),
-    url("https://tile.openstreetmap.org/10/511/340.png");
+    repeating-linear-gradient(34deg, transparent 0 64px, rgba(231, 196, 103, 0.2) 65px 68px),
+    #477b70;
   background-size:
     40px 40px,
     40px 40px,
-    cover,
     cover;
   box-shadow: inset 0 0 0 999px rgba(11, 35, 34, 0.18);
 }
